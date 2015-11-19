@@ -1,6 +1,7 @@
 ﻿using System;
 using Metrics.Samples;
 using Metrics.Utils;
+using Metrics.Reporters;
 
 namespace Metrics.SamplesConsole
 {
@@ -8,14 +9,15 @@ namespace Metrics.SamplesConsole
     {
         static void Main(string[] args)
         {
+            Console.Write("setting things up... ");
             //Metric.CompletelyDisableMetrics();
 
-            Metric.Config
+            var config = Metric.Config
                 .WithHttpEndpoint("http://localhost:1234/metrics/")
                 .WithAllCounters()
                 .WithInternalMetrics()
-                .WithReporting(config => config
-                    .WithConsoleReport(TimeSpan.FromSeconds(30))
+                .WithReporting(reports => reports
+                    .WithReport(new ConsoleReport(), TimeSpan.FromSeconds(30), runAtDispose: true)
                 //.WithCSVReports(@"c:\temp\reports\", TimeSpan.FromSeconds(10))
                 //.WithTextFileReport(@"C:\temp\reports\metrics.txt", TimeSpan.FromSeconds(10))
                 //.WithGraphite(new Uri("net.udp://localhost:2003"), TimeSpan.FromSeconds(1))
@@ -23,12 +25,15 @@ namespace Metrics.SamplesConsole
                 //.WithElasticSearch("192.168.1.8", 9200, "metrics", TimeSpan.FromSeconds(1))
                 );
 
+            // ensures config is Disposed, whuch causes reports so configured to run a final time
+            using(config)
             using (var scheduler = new ActionScheduler())
             {
                 SampleMetrics.RunSomeRequests();
 
                 scheduler.Start(TimeSpan.FromMilliseconds(500), () =>
                     {
+                        Console.WriteLine("triggering actions...");
                         SetCounterSample.RunSomeRequests();
                         SetMeterSample.RunSomeRequests();
                         UserValueHistogramSample.RunSomeRequests();
@@ -49,8 +54,9 @@ namespace Metrics.SamplesConsole
                 HealthChecksSample.RegisterHealthChecks();
                 //Metrics.Samples.FSharp.HealthChecksSample.RegisterHealthChecks();
 
-                Console.WriteLine("done setting things up");
+                Console.WriteLine("done. Press any key to exit with a final report");
                 Console.ReadKey();
+                Console.WriteLine("exiting...");
             }
         }
     }
