@@ -79,21 +79,25 @@ namespace Metrics.Core
         public TimerContext NewContext(string userValue = null)
         {
             counter.Increment();
-            return new TimeMeasuringContext(this.clock, (t) =>
+            return new TimeMeasuringContext(this.clock, (t, cancelled) =>
             {
                 counter.Decrement();
-                Record(t, TimeUnit.Nanoseconds, userValue);
+                if (!cancelled)
+                    Record(t, TimeUnit.Nanoseconds, userValue);
             });
         }
 
         public TimerContext NewContext(Action<TimeSpan> finalAction, string userValue = null)
         {
             counter.Increment();
-            return new TimeMeasuringContext(this.clock, t =>
+            return new TimeMeasuringContext(this.clock, (t, cancelled) =>
             {
                 counter.Decrement();
-                Record(t, TimeUnit.Nanoseconds, userValue);
-                finalAction(TimeSpan.FromMilliseconds(TimeUnit.Nanoseconds.ToMilliseconds(t)));
+                if (!cancelled)
+                {
+                    Record(t, TimeUnit.Nanoseconds, userValue);
+                    finalAction(TimeSpan.FromMilliseconds(TimeUnit.Nanoseconds.ToMilliseconds(t)));
+                }
             });
         }
 

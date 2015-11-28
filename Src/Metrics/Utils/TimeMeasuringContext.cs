@@ -6,16 +6,19 @@ namespace Metrics.Utils
     {
         private readonly Clock clock;
         private readonly long start;
-        private readonly Action<long> action;
+        private readonly Action<long, bool> action;
+        private bool cancelled;
         private bool disposed;
 
-        public TimeMeasuringContext(Clock clock, Action<long> disposeAction)
+        public TimeMeasuringContext(Clock clock, Action<long, bool> disposeAction)
         {
             this.clock = clock;
             this.start = clock.Nanoseconds;
             this.action = disposeAction;
             this.disposed = false;
+            this.cancelled = false;
         }
+        public bool Cancelled { get { return cancelled; } set { cancelled = value; } }
 
         public TimeSpan Elapsed
         {
@@ -33,7 +36,7 @@ namespace Metrics.Utils
                 return;
             }
             this.disposed = true;
-            this.action(this.clock.Nanoseconds - this.start);
+            this.action(this.clock.Nanoseconds - this.start, Cancelled);
         }
     }
 }

@@ -81,5 +81,6 @@ namespace Metrics
         /// Provides the currently elapsed time from when the instance has been created
         /// </summary>
         TimeSpan Elapsed { get; }
+        bool Cancelled { get; set; }
     }
 }

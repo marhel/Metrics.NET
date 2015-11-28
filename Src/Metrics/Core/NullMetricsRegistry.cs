@@ -32,6 +32,7 @@ namespace Metrics.Core
             public TimerContext NewContext(Action<TimeSpan> finalAction, string userValue = null) { finalAction(TimeSpan.Zero); return NullMetric.Instance; }
 
             public TimeSpan Elapsed { get { return TimeSpan.Zero; } }
+            public bool Cancelled { get; set; }
             public void Dispose()
             { }
 
