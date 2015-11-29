@@ -23,6 +23,7 @@ namespace Metrics.Reports
         /// </summary>
         /// <param name="report">Function that returns an instance of a reporter</param>
         /// <param name="interval">Interval at which to run the report.</param>
+        /// <param name="runAtDispose">If report should be allowed a final run during Dispose</param>
         public MetricsReports WithReport(MetricsReport report, TimeSpan interval, bool runAtDispose = false)
         {
             var newReport = new ScheduledReporter(report, this.metricsDataProvider, this.healthStatus, interval, runAtDispose);
